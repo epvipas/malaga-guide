@@ -261,9 +261,9 @@ let map, layer, mapReady = false, markers = {};
 function initMap() {
   if (mapReady || !window.L) return;
   map = L.map('map', { zoomControl: true }).setView([36.7205, -4.4215], 15);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>' }).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
   const hi = L.divIcon({ className: '', html: '<div class="pin hotel">H</div>', iconSize: [34, 34], iconAnchor: [17, 17] });
   L.marker([HOTEL.lat, HOTEL.lon], { icon: hi, zIndexOffset: 1000 }).addTo(map)
    .bindPopup(`<div class="pop"><h4>🏨 ${esc(HOTEL.name)}</h4><div class="addr">${esc(HOTEL.addr)}</div>${actions({q: HOTEL.name + ', Calle Mármoles 6, Málaga', name: HOTEL.name, ta: true}, true)}</div>`);

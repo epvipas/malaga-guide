@@ -12,7 +12,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
-  if (u.hostname.endsWith('basemaps.cartocdn.com')) {
+  if (u.hostname === 'tile.openstreetmap.org') {
     // map tiles: cache as you browse so viewed areas work offline
     e.respondWith(caches.open('malaga-tiles').then(c => c.match(e.request).then(hit => {
       const net = fetch(e.request).then(r => { if (r.ok || r.type === 'opaque') c.put(e.request, r.clone()); return r; }).catch(() => hit);
