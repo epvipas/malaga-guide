@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Málaga Guide</title>
+<meta name="description" content="Sights, museums, galleries, shops, cafés, tapas, restaurants and bars in Málaga, with maps, reviews and directions.">
+<meta name="theme-color" content="#E8483B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Málaga">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<style>
+:root{--red:#E8483B;--orange:#E8930C;--yellow:#FFD23F;--teal:#2EC4B6;--blue:#1877D0;--purple:#8E44C9;--pink:#E5007E;--ink:#2B2D42;--bg:#FFFBF4;
+ --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:inherit}
+header{position:sticky;top:0;z-index:1050;background:linear-gradient(110deg,#FF6B6B,#FF9A3C 55%,#FFD23F);padding:calc(10px + var(--safe-t)) 14px 10px;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:36px;height:36px;border-radius:9px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.brand h1{margin:0;font-size:22px;font-weight:900;letter-spacing:-.5px;text-shadow:0 2px 0 rgba(192,57,43,.6)}
+.brand small{display:block;font-size:11px;font-weight:600;opacity:.95;text-shadow:none}
+.search{margin-top:9px;display:flex;gap:8px}
+.search input{flex:1;border:0;border-radius:12px;padding:10px 12px;font:600 15px Inter,sans-serif;color:var(--ink);box-shadow:inset 0 0 0 2px rgba(255,255,255,.6)}
+.iconbtn{white-space:nowrap;border:0;border-radius:12px;background:rgba(255,255,255,.95);color:var(--ink);font:800 13px Inter;padding:0 12px;cursor:pointer}
+.iconbtn.on{background:var(--ink);color:var(--yellow)}
+main{padding:12px 12px calc(84px + var(--safe-b));max-width:860px;margin:0 auto}
+.view{display:none}.view.active{display:block}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:0;border-radius:999px;padding:8px 13px;font:800 13px Inter;background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.1);cursor:pointer;white-space:nowrap}
+.chip.on{color:#fff}
+.sortbar{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#777;margin:0 2px 8px;gap:8px}
+.sortbar select{border:1px solid #ddd;border-radius:8px;padding:5px;font:600 12px Inter;background:#fff}
+.grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 3px 14px rgba(43,45,66,.10);display:flex;flex-direction:column}
+.pic{position:relative;aspect-ratio:16/7;background:#eee}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;top:10px;left:10px;border-radius:999px;color:#fff;font:800 12px Inter;padding:5px 10px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.heart{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:19px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.body{padding:12px 14px 14px}
+.body h3{margin:0 0 4px;font-size:18px;font-weight:900;letter-spacing:-.2px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;font-weight:700;color:#555;margin-bottom:6px}
+.meta span{background:#F3EFE7;border-radius:999px;padding:3px 8px}
+.meta .price{background:var(--ink);color:var(--yellow);letter-spacing:1px}
+.addr{font-size:12.5px;color:#666;margin-bottom:6px}
+.text{font-size:14px;line-height:1.5;color:#3b3d50;margin:0}
+.text.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.more{border:0;background:none;color:var(--blue);font:800 13px Inter;padding:4px 0;cursor:pointer}
+.tip{display:inline-block;margin-top:6px;font-size:12px;font-weight:800;border-radius:999px;padding:4px 10px}
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;border-radius:12px;padding:10px 6px;font:800 13px Inter;border:0;cursor:pointer;color:#fff;text-align:center;min-height:42px}
+.b-google{background:#4285F4}.b-ta{background:#00AA6C}.b-apple{background:#111}.b-gmaps{background:#0F9D58}.b-map{background:#F3EFE7;color:var(--ink)}
+.btn.wide{grid-column:span 2}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:1100;background:#fff;display:flex;justify-content:space-around;padding:6px 4px calc(6px + var(--safe-b));box-shadow:0 -2px 12px rgba(0,0,0,.12)}
+nav.tabs button{flex:1;border:0;background:none;font:800 11px Inter;color:#888;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;cursor:pointer}
+nav.tabs button .ic{font-size:22px;line-height:1}
+nav.tabs button.on{color:var(--red)}
+#map{height:calc(100vh - 210px - var(--safe-b));height:calc(100dvh - 210px - var(--safe-b));border-radius:16px;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.12)}
+.pin{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pin.hotel{background:var(--ink);color:var(--yellow);font:900 16px Inter}
+.leaflet-popup-content{margin:10px 12px;font-family:Inter}
+.pop h4{margin:0 0 2px;font-size:15px}.pop .addr{margin-bottom:8px}
+.pop .actions{margin-top:6px;gap:6px}.pop .btn{min-height:34px;padding:7px 4px;font-size:12px}
+.mapnote{font-size:12px;color:#777;margin:8px 4px}
+.sec{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 3px 14px rgba(43,45,66,.08)}
+.sec h2{margin:0 0 8px;font-size:21px;font-weight:900}
+.sec h3{margin:14px 0 6px;font-size:16px}
+.sec p,.sec li{font-size:14px;line-height:1.55}
+.sec ul,.sec ol{padding-left:20px;margin:6px 0}
+.hero{border-radius:18px;overflow:hidden;margin-bottom:14px;position:relative}
+.hero img{width:100%;display:block;aspect-ratio:16/8;object-fit:cover}
+.hero .cap{position:absolute;left:12px;bottom:12px;right:12px;background:rgba(43,45,66,.92);color:#fff;border-radius:12px;padding:10px 12px}
+.hero .cap b{font-size:17px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fact{background:#FFF8E1;border-radius:12px;padding:10px;font-size:13px;line-height:1.4}
+.opt{border-radius:14px;overflow:hidden;margin:10px 0;border:2px solid}
+.opt h4{margin:0;color:#fff;padding:9px 12px;display:flex;justify-content:space-between;font-size:15px}
+.opt ol{margin:0;padding:10px 14px 10px 30px}
+.gloss{display:grid;gap:8px}
+.gloss div{background:#F8F5EE;border-radius:10px;padding:8px 10px;font-size:13.5px}
+.day{border-radius:14px;padding:12px;margin:8px 0;font-size:14px;line-height:1.5}
+.empty{text-align:center;color:#888;padding:40px 10px;font-size:15px}
+.linkchip{display:inline-block;margin:3px 4px 3px 0;padding:4px 9px;border-radius:999px;background:#F3EFE7;font-size:12.5px;font-weight:700;text-decoration:none;cursor:pointer;border:0}
+/* install banner */
+#install{position:fixed;left:10px;right:10px;bottom:calc(76px + var(--safe-b));z-index:1200;background:var(--ink);color:#fff;border-radius:16px;padding:12px 12px 12px 14px;display:none;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.35);max-width:640px;margin:0 auto}
+#install img{width:44px;height:44px;border-radius:10px}
+#install .t{flex:1;font-size:13.5px;line-height:1.35}
+#install .t b{color:var(--yellow);font-size:15px}
+#install button{border:0;border-radius:10px;font:900 13px Inter;padding:9px 12px;cursor:pointer}
+#install .go{background:var(--yellow);color:var(--ink)}
+#install .x{background:transparent;color:#bbb;font-size:20px;padding:4px 6px}
+#iosSheet{position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,.5);display:none;align-items:flex-end}
+#iosSheet .s{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:18px 18px calc(22px + var(--safe-b));max-width:640px;margin:0 auto}
+#iosSheet ol{font-size:15px;line-height:1.7;padding-left:22px}
+#toast{z-index:1400!important;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + var(--safe-b));background:var(--ink);color:#fff;padding:9px 14px;border-radius:999px;font:700 13px Inter;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none}
+.coffee{display:flex;gap:6px;justify-content:space-between;overflow-x:auto;padding-bottom:4px}
+.coffee div{flex:1;min-width:52px;text-align:center;font-size:11px;font-weight:800}
+.coffee .g{height:80px;border:3px solid var(--ink);border-top:0;border-radius:0 0 8px 8px;position:relative;overflow:hidden;background:#F7EBD9;margin-bottom:4px}
+.coffee .g span{position:absolute;left:0;right:0;bottom:0;background:#6F4E37}
+.price-row{display:flex;gap:6px;margin:-2px 0 10px}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><img src="icon-192.png" alt=""><div><h1>Málaga</h1><small>Sights · Art · Shops · Eat · Drink · Out</small></div></div>
+ <div class="search"><input id="q" type="search" placeholder="Search places, food, streets…" autocomplete="off"><button class="iconbtn" id="nearBtn" title="Sort by distance from me">📍 Near me</button></div>
+</header>
+
+<main>
+ <section class="view" id="v-explore">
+  <div class="chips" id="chips-see"></div>
+  <div class="sortbar"><span id="count-see"></span><select id="sort-see"><option value="walk">Closest to hotel</option><option value="name">A–Z</option><option value="me">Closest to me</option></select></div>
+  <div class="grid" id="list-see"></div>
+ </section>
+ <section class="view" id="v-eat">
+  <div class="chips" id="chips-eat"></div>
+  <div class="price-row" id="prices"></div>
+  <div class="sortbar"><span id="count-eat"></span><select id="sort-eat"><option value="walk">Closest to hotel</option><option value="price">Cheapest first</option><option value="name">A–Z</option><option value="me">Closest to me</option></select></div>
+  <div class="grid" id="list-eat"></div>
+ </section>
+ <section class="view" id="v-map">
+  <div class="chips" id="chips-map"></div>
+  <div id="map"></div>
+  <p class="mapnote">Pins are approximate. The Directions buttons search by name and address, so they'll take you to the right door.</p>
+ </section>
+ <section class="view" id="v-saved">
+  <div class="sec" style="padding:12px 16px"><b>♥ My list</b>: places you've saved, kept on this phone.</div>
+  <div class="grid" id="list-saved"></div>
+ </section>
+ <section class="view" id="v-info"></section>
+</main>
+
+<nav class="tabs">
+ <button data-v="explore" class="on"><span class="ic">🏛️</span>Explore</button>
+ <button data-v="eat"><span class="ic">🍷</span>Eat &amp; Drink</button>
+ <button data-v="map"><span class="ic">🗺️</span>Map</button>
+ <button data-v="saved"><span class="ic">♥</span>Saved</button>
+ <button data-v="info"><span class="ic">ℹ️</span>Info</button>
+</nav>
+
+<div id="install"><img src="icon-192.png" alt=""><div class="t"><b>Install the Málaga guide</b><br>Add it to your home screen. It opens like an app and works offline.</div><button class="go" id="installGo">Install</button><button class="x" id="installX" aria-label="Dismiss">×</button></div>
+<div id="iosSheet"><div class="s"><h3 style="margin:0 0 6px">Add to your iPhone home screen</h3>
+ <ol><li>Tap the <b>Share</b> button <span style="font-size:18px">⬆︎</span> in Safari's toolbar.</li><li>Scroll down and tap <b>Add to Home Screen</b> ➕.</li><li>Tap <b>Add</b>. The guide then opens full-screen like an app.</li></ol>
+ <p style="font-size:13px;color:#777">On iPhone this only works in <b>Safari</b>. If you opened the link in another app, open it in Safari first.</p>
+ <button class="btn b-apple" style="width:100%" id="iosOk">Got it</button></div></div>
+<div id="toast"></div>
+
+<script src="data.js"></script>
+<script src="vendor/leaflet.js"></script>
+<script>
+(() => {
+const G = window.GUIDE, CATS = G.cats, ITEMS = G.items, HOTEL = G.hotel;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d } catch(e) { return d } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)) } catch(e) {} } };
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/i.test(navigator.userAgent);
+const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+let saved = new Set(store.get('saved', []));
+let me = null;
+const state = { see: 'all', eat: 'all', price: 0, map: 'all', q: '' };
+
+function toast(t) { const el = $('#toast'); el.textContent = t; el.style.opacity = 1; clearTimeout(toast._t); toast._t = setTimeout(() => el.style.opacity = 0, 1800); }
+
+// ---------- links ----------
+const enc = encodeURIComponent;
+const L_google = it => `https://www.google.com/maps/search/?api=1&query=${enc(it.q)}`;
+const L_ta = it => `https://www.tripadvisor.co.uk/Search?q=${enc(it.name + ' Malaga')}`;
+const L_apple = it => `https://maps.apple.com/?daddr=${enc(it.q)}&dirflg=w`;
+const L_gmaps = it => `https://www.google.com/maps/dir/?api=1&destination=${enc(it.q)}&travelmode=walking`;
+
+function dist(a, b) { const R = 6371000, toR = x => x * Math.PI / 180;
+  const dLa = toR(b.lat - a.lat), dLo = toR(b.lon - a.lon);
+  const h = Math.sin(dLa/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+function meMin(it) { return me ? Math.max(1, Math.round(dist(me, it) * 1.3 / 80)) : null; }
+
+function navButtons(it, small) {
+  const apple = `<a class="btn b-apple" href="${L_apple(it)}" target="_blank" rel="noopener">🍎 Apple Maps</a>`;
+  const gm = `<a class="btn b-gmaps" href="${L_gmaps(it)}" target="_blank" rel="noopener">🧭 Google Maps</a>`;
+  return isIOS ? apple + gm : gm + apple;
+}
+function actions(it, small) {
+  return `<div class="actions">
+    <a class="btn b-google" href="${L_google(it)}" target="_blank" rel="noopener">★ Google reviews</a>
+    ${it.ta ? `<a class="btn b-ta" href="${L_ta(it)}" target="_blank" rel="noopener">🦉 TripAdvisor</a>` : `<span class="btn b-map" style="opacity:.5">No TripAdvisor</span>`}
+    ${navButtons(it)}
+    ${small ? '' : `<button class="btn b-map wide" data-showmap="${it.id}">🗺️ Show on map</button>`}
+  </div>`;
+}
+
+function card(it) {
+  const c = CATS[it.cat];
+  const dm = meMin(it);
+  const price = it.price ? `<span class="price">${'€'.repeat(it.price)}</span>` : '';
+  return `<article class="card" id="c-${it.id}">
+   <div class="pic"><img loading="lazy" src="${it.img}" alt=""><span class="badge" style="background:${c.color}">${c.emoji} ${esc(c.title)}</span>
+    <button class="heart" data-save="${it.id}" aria-label="Save">${saved.has(it.id) ? '❤️' : '🤍'}</button></div>
+   <div class="body"><h3 style="color:${c.color}">${esc(it.name)}</h3>
+    <div class="meta">${price}<span>🚶 ${it.walk} min from hotel</span>${dm ? `<span>📍 ${dm} min from you</span>` : ''}${it.far ? '<span>🚕 outside centre</span>' : ''}</div>
+    <div class="addr">📍 ${esc(it.addr)}</div>
+    <p class="text clamp">${esc(it.text)}</p><button class="more" data-more>Read more</button>
+    ${it.tip ? `<div><span class="tip" style="background:${c.color}1F;color:${c.color}">★ ${esc(it.tip)}</span></div>` : ''}
+    ${actions(it)}
+   </div></article>`;
+}
+
+function matches(it) {
+  if (!state.q) return true;
+  const q = state.q.toLowerCase();
+  return (it.name + ' ' + it.addr + ' ' + it.text + ' ' + CATS[it.cat].title).toLowerCase().includes(q);
+}
+function sorted(list, how) {
+  const a = list.slice();
+  if (how === 'name') a.sort((x, y) => x.name.localeCompare(y.name));
+  else if (how === 'price') a.sort((x, y) => x.price - y.price || x.walk - y.walk);
+  else if (how === 'me' && me) a.sort((x, y) => dist(me, x) - dist(me, y));
+  else a.sort((x, y) => x.walk - y.walk);
+  return a;
+}
+
+function chips(sec, el, key) {
+  const cats = Object.entries(CATS).filter(([k, c]) => !sec || c.sec === sec);
+  const all = `<button class="chip ${state[key]==='all'?'on':''}" style="${state[key]==='all'?'background:var(--ink)':''}" data-chip="${key}" data-v="all">All</button>`;
+  el.innerHTML = all + cats.map(([k, c]) => `<button class="chip ${state[key]===k?'on':''}" style="${state[key]===k?`background:${c.color}`:''}" data-chip="${key}" data-v="${k}">${c.emoji} ${esc(c.title)}</button>`).join('');
+}
+
+function renderList(sec) {
+  const key = sec === 'see' ? 'see' : 'eat';
+  chips(sec, $(`#chips-${key}`), key);
+  let list = ITEMS.filter(it => CATS[it.cat].sec === sec && (state[key] === 'all' || it.cat === state[key]) && matches(it));
+  if (sec === 'eat' && state.price) list = list.filter(it => it.price === state.price);
+  list = sorted(list, $(`#sort-${key}`).value);
+  $(`#count-${key}`).textContent = `${list.length} place${list.length === 1 ? '' : 's'}`;
+  $(`#list-${key}`).innerHTML = list.length ? list.map(card).join('') : '<div class="empty">Nothing matches. Try another filter.</div>';
+}
+function renderPrices() {
+  $('#prices').innerHTML = [0,1,2,3,4].map(p => `<button class="chip ${state.price===p?'on':''}" style="${state.price===p?'background:var(--ink)':''}" data-price="${p}">${p ? '€'.repeat(p) : 'Any price'}</button>`).join('');
+}
+function renderSaved() {
+  const list = ITEMS.filter(it => saved.has(it.id));
+  $('#list-saved').innerHTML = list.length ? list.map(card).join('') : '<div class="empty">Tap 🤍 on any place to save it here.</div>';
+}
+function renderAll() { renderList('see'); renderPrices(); renderList('eat'); renderSaved(); if (mapReady) renderMarkers(); }
+
+// ---------- map ----------
+let map, layer, mapReady = false, markers = {};
+function initMap() {
+  if (mapReady || !window.L) return;
+  map = L.map('map', { zoomControl: true }).setView([36.7205, -4.4215], 15);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>' }).addTo(map);
+  const hi = L.divIcon({ className: '', html: '<div class="pin hotel">H</div>', iconSize: [34, 34], iconAnchor: [17, 17] });
+  L.marker([HOTEL.lat, HOTEL.lon], { icon: hi, zIndexOffset: 1000 }).addTo(map)
+   .bindPopup(`<div class="pop"><h4>🏨 ${esc(HOTEL.name)}</h4><div class="addr">${esc(HOTEL.addr)}</div>${actions({q: HOTEL.name + ', Calle Mármoles 6, Málaga', name: HOTEL.name, ta: true}, true)}</div>`);
+  layer = L.layerGroup().addTo(map);
+  mapReady = true; renderMarkers();
+  L.control.locate = null;
+  const LocBtn = L.Control.extend({ onAdd() { const b = L.DomUtil.create('button', 'iconbtn'); b.innerHTML = '📍 Me'; b.style.cssText = 'padding:8px 10px;box-shadow:0 1px 5px rgba(0,0,0,.3)';
+    L.DomEvent.on(b, 'click', e => { L.DomEvent.stop(e); locate(true); }); return b; } });
+  new LocBtn({ position: 'topright' }).addTo(map);
+}
+let meMarker;
+function renderMarkers() {
+  chips(null, $('#chips-map'), 'map');
+  layer.clearLayers(); markers = {};
+  ITEMS.filter(it => (state.map === 'all' || it.cat === state.map) && matches(it)).forEach(it => {
+    const c = CATS[it.cat];
+    const ic = L.divIcon({ className: '', html: `<div class="pin" style="background:${c.color}">${c.emoji}</div>`, iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -12] });
+    const m = L.marker([it.lat, it.lon], { icon: ic }).bindPopup(`<div class="pop"><h4 style="color:${c.color}">${esc(it.name)}</h4><div class="addr">${it.price ? '<b>' + '€'.repeat(it.price) + '</b> · ' : ''}🚶 ${it.walk} min from hotel<br>${esc(it.addr)}</div>
+      <button class="linkchip" data-goto="${it.id}">Read more ›</button>${actions(it, true)}</div>`, { maxWidth: 290 });
+    m.addTo(layer); markers[it.id] = m;
+  });
+  if (me) drawMe();
+}
+function drawMe() {
+  if (!mapReady) return;
+  if (meMarker) meMarker.remove();
+  meMarker = L.circleMarker([me.lat, me.lon], { radius: 9, color: '#fff', weight: 3, fillColor: '#4285F4', fillOpacity: 1 }).addTo(map).bindPopup('You are here');
+}
+function showOnMap(id) {
+  const it = ITEMS.find(x => x.id === id); go('map');
+  setTimeout(() => { map.invalidateSize(); if (state.map !== 'all' && state.map !== it.cat) { state.map = 'all'; renderMarkers(); }
+    map.setView([it.lat, it.lon], 17); markers[id] && markers[id].openPopup(); }, 120);
+}
+
+// ---------- geolocation ----------
+function locate(pan) {
+  if (!navigator.geolocation) { toast('Location not available'); return; }
+  toast('Finding you…');
+  navigator.geolocation.getCurrentPosition(p => {
+    me = { lat: p.coords.latitude, lon: p.coords.longitude };
+    $('#nearBtn').classList.add('on');
+    ['see', 'eat'].forEach(k => $(`#sort-${k}`).value = 'me');
+    renderAll();
+    if (mapReady) { drawMe(); if (pan) map.setView([me.lat, me.lon], 16); }
+    toast(dist(me, HOTEL) > 30000 ? 'Located: you\'re not in Málaga yet!' : 'Sorted by distance from you');
+  }, () => toast('Location permission denied'), { enableHighAccuracy: true, timeout: 10000 });
+}
+
+// ---------- info ----------
+function coffee() {
+  const c = [['Solo',100],['Largo',90],['Semilargo',80],['Solo corto',60],['Mitad',50],['Entrecorto',40],['Corto',30],['Sombra',20],['Nube',10]];
+  return '<div class="coffee">' + c.map(([n, p]) => `<div><div class="g"><span style="height:${p}%"></span></div>${n}<br><span style="font-weight:600;color:#888">${p}%</span></div>`).join('') + '</div>';
+}
+function iref(id, label) { const it = ITEMS.find(x => x.id === id); return `<button class="linkchip" data-goto="${id}" style="color:${CATS[it.cat].color}">${CATS[it.cat].emoji} ${esc(label || it.name)}</button>`; }
+function byName(n) { return ITEMS.find(x => x.name === n).id; }
+function renderInfo() {
+  const H = HOTEL, hq = { q: H.name + ', Calle Mármoles 6, Málaga', name: H.name, ta: true };
+  $('#v-info').innerHTML = `
+  <div class="hero"><img src="img/hotel.svg" alt=""><div class="cap"><span style="color:var(--yellow);font-size:11px;font-weight:800;letter-spacing:2px">YOUR BASE</span><br><b>${esc(H.name)}</b><br><span style="font-size:13px">${esc(H.addr)}</span></div></div>
+  <div class="sec"><h2>🏨 The hotel</h2>
+   <p>A 4-star hotel in the Trinidad quarter on the west bank of the Guadalmedina, a couple of minutes from the Santo Domingo bridge into the old town.</p>
+   <div class="facts">
+    <div class="fact"><b>☀ Rooftop</b><br>Pool, terrace bar (Áurea) and views. The pool and bar are seasonal, so ask at reception.</div>
+    <div class="fact"><b>🏋 Gym</b><br>A small rooftop fitness room</div>
+    <div class="fact"><b>🍽 Restaurant</b><br>Mediterranean and Andalusian food, plus a café-bar and buffet breakfast</div>
+    <div class="fact"><b>🕑 Times</b><br>Check-in from 14:00, check-out by 12:00. Luggage storage available.</div>
+   </div>
+   <p style="margin-top:10px">☎ <a href="tel:+34952070216">+34 952 07 02 16</a> · <a href="https://${H.web}" target="_blank" rel="noopener">${H.web}</a></p>
+   ${actions(hq, true)}
+  </div>
+  <div class="sec"><h2>✈️ Airport → hotel</h2>
+   <img src="img/transit.svg" alt="" style="width:100%;border-radius:12px;aspect-ratio:16/7;object-fit:cover">
+   <div class="opt" style="border-color:#E8483B"><h4 style="background:#E8483B"><span>🚆 Train C1</span><span>€1.80 · 12 min</span></h4><ol>
+    <li>Follow the signs from arrivals to <b>Tren / Cercanías</b>, next to Terminal 3.</li>
+    <li>Take the C1 heading for <b>Málaga Centro-Alameda</b>, <u>not</u> Fuengirola. Trains run about every 20 minutes.</li>
+    <li>Get off at the last stop, then walk north along the west bank of the river for about 7–8 minutes to <b>Calle Mármoles</b>.</li></ol></div>
+   <div class="opt" style="border-color:#2EC4B6"><h4 style="background:#2EC4B6"><span>🚌 Bus A Express</span><span>≈ €4 · 15–25 min</span></h4><ol>
+    <li>The stop is outside Arrivals on Floor 0 of Terminal 3. Buses run about every 20–30 minutes, from about 07:00 until midnight.</li>
+    <li>Get off at <b>Avenida de Andalucía</b> (by El Corte Inglés), about 5 minutes' walk from the hotel.</li></ol></div>
+   <div class="opt" style="border-color:#E8930C"><h4 style="background:#E8930C"><span>🚕 Taxi</span><span>≈ €20–30 · 15–20 min</span></h4><ol>
+    <li>The official rank is outside Arrivals. Show the driver: <b>Hotel Sallés Málaga Centro, Calle Mármoles 6</b>.</li>
+    <li>There are supplements at night, at weekends and on public holidays. Uber and Cabify also operate.</li></ol></div>
+   <p><b>Going home:</b> take the C1 from Centro-Alameda towards <b>Fuengirola</b> and get off at <b>Aeropuerto</b>. Aim to arrive about 2 hours before your flight.</p>
+  </div>
+  <div class="sec"><h2>🗓️ Three easy days</h2>
+   <div class="day" style="background:#FDE3DF"><b>Day 1 · Moors, Romans &amp; Picasso:</b> ${iref(byName('Alcazaba'))} ${iref(byName('Castillo de Gibralfaro'))} ${iref(byName('Teatro Romano'))} ${iref(byName('Museo Picasso Málaga'))} ${iref(byName('Museo Casa Natal Picasso'))} ${iref(byName('Galería Javier Román'))}</div>
+   <div class="day" style="background:#DDEBFA"><b>Day 2 · Old town &amp; shopping:</b> ${iref(byName('Mercado Central de Atarazanas'))} ${iref(byName('Catedral de la Encarnación'))} ${iref(byName('Museo Revello de Toro'))} ${iref(byName('Museo Carmen Thyssen'))} ${iref(byName('Casa Mira'))} ${iref(byName('Antigua Casa de Guardia'))}</div>
+   <div class="day" style="background:#EFE2F8"><b>Day 3 · Contemporary Málaga:</b> ${iref(byName('Soho – Barrio de las Artes'))} ${iref(byName('JM Galería'))} ${iref(byName('MUCAC Mayoristas (former CAC)'))} ${iref(byName('Centre Pompidou Málaga'))} ${iref(byName('MUCAC La Coracha'))} ${iref(byName('Galería Isabel Hurley'))}</div>
+  </div>
+  <div class="sec"><h2>🌙 Evenings by budget</h2>
+   <div class="day" style="background:#D8F3EE"><b>€ Cheap &amp; cheerful:</b> ${iref(byName('Casa Lola'))} ${iref(byName('Pepa y Pepe'))} ${iref(byName('La Tranca'))}</div>
+   <div class="day" style="background:#FDEFD6"><b>€€ Wine &amp; creative tapas:</b> ${iref(byName('Terraza Chinitas'))} ${iref(byName('Los Patios de Beatas'))} ${iref(byName('La Cosmo'))}</div>
+   <div class="day" style="background:#EFE2F8"><b>€€€€ The big night:</b> ${iref(byName('Ático, AC Hotel Málaga Palacio'))} ${iref(byName('Blossom'))} ${iref(byName('Kaleja'))} ${iref(byName('The Pharmacy'))}</div>
+   <div class="day" style="background:#FDE0F0"><b>🏳️‍🌈 The Merced quarter:</b> ${iref(byName('La Calle de Bruselas'))} ${iref(byName('Mantón, Bar de Copas'))} ${iref(byName('La Comedia'))} ${iref(byName("Lolita's"))} ${iref(byName('Theatro Club'))}
+    <p style="margin:8px 0 0;font-size:13px">If you want a bigger scene, the C1 train reaches <b>Torremolinos</b> (La Nogalera and Pasaje Begoña) in about 20 minutes.</p></div>
+  </div>
+  <div class="sec"><h2>☕ Order coffee like a malagueño</h2>${coffee()}<p style="font-size:13px">These are the percentages of coffee in the glass, with the rest milk. A <b>pitufo</b> is a small toasted breakfast roll.</p></div>
+  <div class="sec"><h2>🍴 Eating tips</h2><ul>
+   <li>Lunch is 14:00–16:00 and dinner from 20:30–21:00. Look for a weekday <b>menú del día</b> (€12–18).</li>
+   <li>Order tapas a few at a time. A <b>media ración</b> is a half portion.</li>
+   <li>Most museums close on Mondays and the Pompidou on Tuesdays. Many restaurants close on Sunday evening or Monday.</li>
+   <li>Book the Michelin restaurants 1–3 weeks ahead. José Carlos García is moving to the Café de París site this autumn, so check the address.</li>
+   <li>Tipping is optional: round up in bars, and leave about 5–10% for good service in restaurants.</li></ul></div>
+  <div class="sec"><h2>📖 Menu decoder</h2><div class="gloss">
+   <div><b>Espetos</b>: sardines grilled on canes over embers</div><div><b>Boquerones</b>: fresh anchovies, fried or in vinegar</div>
+   <div><b>Fritura malagueña</b>: mixed fried fish</div><div><b>Porra antequerana</b>: thick, chilled tomato soup</div>
+   <div><b>Ajoblanco</b>: cold almond and garlic soup</div><div><b>Gazpachuelo</b>: warm fish soup thickened with mayonnaise</div>
+   <div><b>Berenjenas con miel</b>: fried aubergine with cane honey</div><div><b>Vino dulce</b>: sweet Málaga wines such as Moscatel and Pedro Ximénez</div>
+   <div><b>Vermú de grifo</b>: vermouth on tap</div><div><b>Caña / doble</b>: a small or large draught beer</div></div></div>
+  <div class="sec"><h2>🗣️ Handy phrases</h2><ul>
+   <li><b>Una mesa para dos, por favor</b>: a table for two, please</li><li><b>¿Qué nos recomienda?</b>: what do you recommend?</li>
+   <li><b>¿A qué hora abre / cierra?</b>: what time do you open / close?</li><li><b>Una entrada, por favor</b>: one ticket, please</li>
+   <li><b>La cuenta, por favor</b>: the bill, please</li></ul></div>
+  <div class="sec"><h2>⚠️ Before you go</h2><ul>
+   <li>Opening hours and exhibitions change, so check each venue's own site the day before.</li>
+   <li><b>MUCAC Mayoristas</b> (the old CAC) is being converted. Check whether it has reopened.</li>
+   <li>The Museo de Málaga is free for EU citizens only, so UK visitors pay a small fee.</li>
+   <li>Map pins are approximate; use the Directions buttons for exact routes.</li>
+   <li>Information was checked in October and November 2026. The illustrations are original artwork drawn for this guide.</li></ul>
+   <button class="btn b-map" id="installAgain" style="width:100%;margin-top:8px">📲 Install this guide on your phone</button></div>`;
+}
+
+// ---------- navigation ----------
+function go(v) {
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('active', x.id === 'v-' + v));
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
+  window.scrollTo(0, 0);
+  if (v === 'map') { initMap(); setTimeout(() => map && map.invalidateSize(), 60); }
+  if (v === 'saved') renderSaved();
+  store.set('view', v);
+}
+function gotoItem(id) {
+  const it = ITEMS.find(x => x.id === id); const sec = CATS[it.cat].sec;
+  const key = sec === 'see' ? 'see' : 'eat';
+  state[key] = 'all'; state.q = ''; $('#q').value = ''; if (sec === 'eat') state.price = 0;
+  renderAll(); go(sec === 'see' ? 'explore' : 'eat');
+  setTimeout(() => { const el = $('#c-' + id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.outline = '3px solid ' + CATS[it.cat].color; setTimeout(() => el.style.outline = '', 1800); } }, 80);
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-v],[data-chip],[data-save],[data-more],[data-showmap],[data-goto],[data-price]');
+  if (!t) return;
+  if (t.matches('nav.tabs button')) return go(t.dataset.v);
+  if (t.dataset.chip) { state[t.dataset.chip] = t.dataset.v; if (t.dataset.chip === 'map') renderMarkers(); else renderList(t.dataset.chip === 'see' ? 'see' : 'eat'); return; }
+  if (t.dataset.price !== undefined) { state.price = +t.dataset.price; renderPrices(); renderList('eat'); return; }
+  if (t.dataset.save) { const id = t.dataset.save; saved.has(id) ? saved.delete(id) : saved.add(id); store.set('saved', [...saved]);
+    document.querySelectorAll(`[data-save="${id}"]`).forEach(b => b.textContent = saved.has(id) ? '❤️' : '🤍');
+    toast(saved.has(id) ? 'Saved to My list' : 'Removed'); if ($('#v-saved').classList.contains('active')) renderSaved(); return; }
+  if (t.hasAttribute('data-more')) { const p = t.previousElementSibling; p.classList.toggle('clamp'); t.textContent = p.classList.contains('clamp') ? 'Read more' : 'Show less'; return; }
+  if (t.dataset.showmap) return showOnMap(t.dataset.showmap);
+  if (t.dataset.goto) { if (map) map.closePopup(); return gotoItem(t.dataset.goto); }
+});
+$('#q').addEventListener('input', e => { state.q = e.target.value.trim(); renderAll(); });
+$('#sort-see').addEventListener('change', e => { if (e.target.value === 'me' && !me) return locate(); renderList('see'); });
+$('#sort-eat').addEventListener('change', e => { if (e.target.value === 'me' && !me) return locate(); renderList('eat'); });
+$('#nearBtn').addEventListener('click', () => locate(false));
+
+// ---------- install prompt ----------
+let deferred = null;
+const dismissed = store.get('installDismissed', 0);
+function showBanner() { if (standalone) return; $('#install').style.display = 'flex'; }
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; if (Date.now() - dismissed > 3 * 864e5) setTimeout(showBanner, 1500); });
+function doInstall() {
+  if (deferred) { deferred.prompt(); deferred.userChoice.finally(() => { deferred = null; $('#install').style.display = 'none'; }); }
+  else if (isIOS) { $('#iosSheet').style.display = 'flex'; $('#install').style.display = 'none'; }
+  else toast(standalone ? 'Already installed 👍' : 'Use your browser menu ⋮ → "Add to Home screen"');
+}
+$('#installGo').addEventListener('click', doInstall);
+$('#installX').addEventListener('click', () => { $('#install').style.display = 'none'; store.set('installDismissed', Date.now()); });
+$('#iosOk').addEventListener('click', () => $('#iosSheet').style.display = 'none');
+$('#iosSheet').addEventListener('click', e => { if (e.target.id === 'iosSheet') e.currentTarget.style.display = 'none'; });
+document.addEventListener('click', e => { if (e.target.id === 'installAgain') doInstall(); });
+if (isIOS && !standalone && Date.now() - dismissed > 3 * 864e5) {
+  setTimeout(() => { $('#installGo').textContent = 'How?'; showBanner(); }, 2500);
+}
+window.addEventListener('appinstalled', () => { $('#install').style.display = 'none'; toast('Installed! Find it on your home screen'); });
+
+// ---------- boot ----------
+renderInfo(); renderAll();
+const startV = (location.hash || '').slice(1) || store.get('view', 'explore');
+go(['explore', 'eat', 'map', 'saved', 'info'].includes(startV) ? startV : 'explore');
+window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (['explore','eat','map','saved','info'].includes(v)) go(v); });
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+})();
+</script>
+</body>
+</html>

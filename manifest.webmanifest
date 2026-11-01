@@ -1,0 +1,22 @@
+{
+  "name": "Málaga Guide: Sights, Art, Eat & Drink",
+  "short_name": "Málaga",
+  "description": "Sights, museums, galleries, shops, cafés, tapas, restaurants and bars in Málaga, with maps, reviews and directions.",
+  "id": "./",
+  "start_url": "./#explore",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFBF4",
+  "theme_color": "#E8483B",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Map", "url": "./#map"},
+    {"name": "Eat & Drink", "url": "./#eat"},
+    {"name": "My list", "url": "./#saved"}
+  ]
+}
