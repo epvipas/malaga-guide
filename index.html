@@ -402,6 +402,8 @@ function renderInfo() {
    <li><b>Concerts:</b> Migue de Antílopez at Sala La Trinchera and Hijos de la Ruina at the Palacio de Deportes, both on 7 November.</li>
    <li>Just after your dates: the Málaga Marathon on 14 November and the Christmas lights in the last weekend of November.</li>
   </ul></div>
+  <div class="sec"><h2>🔄 Updates</h2><p>The guide checks for new content whenever you're online. If something looks out of date, tap below to clear the saved copy and reload.</p>
+  <button class="iconbtn" id="refreshBtn" style="padding:10px 14px;box-shadow:0 1px 5px rgba(0,0,0,.2)">Refresh guide</button></div>
   <div class="sec"><h2>⚠️ Before you go</h2><ul>
    <li>Opening hours and exhibitions change, so check each venue's own site the day before.</li>
    <li><b>MUCAC Mayoristas</b> (the old CAC) is being converted. Check whether it has reopened.</li>
@@ -473,6 +475,14 @@ const startV = (location.hash || '').slice(1) || store.get('view', 'explore');
 go(['explore', 'eat', 'map', 'saved', 'info'].includes(startV) ? startV : 'explore');
 window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (['explore','eat','map','saved','info'].includes(v)) go(v); });
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+$('#refreshBtn').addEventListener('click', async () => {
+  toast('Refreshing…');
+  try {
+    if ('serviceWorker' in navigator) { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); }
+    const ks = await caches.keys(); await Promise.all(ks.filter(k => k !== 'malaga-tiles').map(k => caches.delete(k)));
+  } catch (e) {}
+  location.reload();
+});
 })();
 </script>
 </body>
