@@ -137,12 +137,29 @@ nav.tabs button.on{color:var(--red)}
   <div class="sec" style="padding:12px 16px"><b>♥ My list</b>: places you've saved, kept on this phone.</div>
   <div class="grid" id="list-saved"></div>
  </section>
+ <section class="view" id="v-history">
+  <div class="sec"><h2>📜 A short history of Málaga</h2>
+  <p><b>Ancient origins.</b> The city began as a Phoenician trading post, and the Romans later made it Malaca, a port exporting fish sauce, wine and olive oil. The Roman theatre below the Alcazaba dates from that period.</p>
+  <p><b>Al-Andalus.</b> Under the Moors the city grew into an important port. The Alcazaba, begun in the 11th century, and the fortress of Gibralfaro stand on the hill above the port, and the city was the main port of the Nasrid kingdom of Granada.</p>
+  <p><b>Christian rule.</b> Ferdinand and Isabella took the city in August 1487, and the Christian city was rebuilt around the old Moorish centre. The cathedral was begun in 1528 and took more than two centuries to complete.</p>
+  <p><b>Modern Málaga.</b> The city was the birthplace of Pablo Picasso in 1881, and by the end of the 19th century it was a busy Mediterranean port. On 8 February 1937, during the Spanish Civil War, it fell to Nationalist forces, and the retreat along the coast road was heavily bombed.</p>
+  <p><b>Today</b> the historic centre, the museums and the port bear all these layers, from the Roman theatre to the Picasso Museum.</p></div>
+ </section>
+ <section class="view" id="v-vermouth">
+  <div class="sec"><h2>🥂 Vermouth culture</h2>
+  <p>Vermouth (vermú) is the classic pre-lunch drink in Málaga, served on tap in old-fashioned bars and often with a few olives or a small plate of tapas. Locals call the midday ritual the <i>vermú</i>.</p>
+  <p><b>Local roots.</b> Málaga's wine tradition is built on sweet, fortified wines such as Moscatel, Pedro Ximénez and Pajarete, and vermouth is traditionally made from local wine with herbs and spices added.</p>
+  <p><b>Old bars.</b> Antigua Casa de Guardia has served sweet wine and vermouth from the barrel since 1840, and it is still the best place to start. Other traditional bars keep the same habit, and newer places have revived vermouth on tap.</p>
+  <p><b>Try it this way.</b> Order a vermouth before lunch, add a few olives or a plate of boquerones, and follow the walk on the Info tab's Vermouth route.</p></div>
+ </section>
  <section class="view" id="v-info"></section>
 </main>
 
 <nav class="tabs">
  <button data-v="explore" class="on"><span class="ic">🏛️</span>Explore</button>
+ <button data-v="history"><span class="ic">📜</span>History</button>
  <button data-v="eat"><span class="ic">🍷</span>Eat &amp; Drink</button>
+ <button data-v="vermouth"><span class="ic">🥂</span>Vermouth</button>
  <button data-v="map"><span class="ic">🗺️</span>Map</button>
  <button data-v="saved"><span class="ic">♥</span>Saved</button>
  <button data-v="info"><span class="ic">ℹ️</span>Info</button>
@@ -479,7 +496,7 @@ window.addEventListener('appinstalled', () => { $('#install').style.display = 'n
 renderInfo(); renderAll();
 const startV = (location.hash || '').slice(1) || store.get('view', 'explore');
 go(['explore', 'eat', 'map', 'saved', 'info'].includes(startV) ? startV : 'explore');
-window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (['explore','eat','map','saved','info'].includes(v)) go(v); });
+window.addEventListener('hashchange', () => { const v = location.hash.slice(1); if (['explore','history','eat','vermouth','map','saved','info'].includes(v)) go(v); });
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 $('#refreshBtn').addEventListener('click', async () => {
   toast('Refreshing…');
