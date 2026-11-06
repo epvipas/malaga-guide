@@ -297,6 +297,27 @@ function initMap() {
   const LocBtn = L.Control.extend({ onAdd() { const b = L.DomUtil.create('button', 'iconbtn'); b.innerHTML = '<span class="medot"></span>Me'; b.style.cssText = 'padding:8px 10px;box-shadow:0 1px 5px rgba(0,0,0,.3)';
     L.DomEvent.on(b, 'click', e => { L.DomEvent.stop(e); locate(true); }); return b; } });
   new LocBtn({ position: 'topright' }).addTo(map);
+  const ShareBtn = L.Control.extend({ onAdd() { const b = L.DomUtil.create('button', 'iconbtn'); b.innerHTML = '📍 Share'; b.style.cssText = 'padding:8px 10px;box-shadow:0 1px 5px rgba(0,0,0,.3)';
+    L.DomEvent.on(b, 'click', e => { L.DomEvent.stop(e); shareMyLocation(); }); return b; } });
+  new ShareBtn({ position: 'topright' }).addTo(map);
+}
+// Snapshot share: a Google Maps link to the phone's current position. No live tracking, no backend.
+function shareMyLocation() {
+  if (!navigator.geolocation) { toast('Location not available'); return; }
+  const name = (window.prompt('Your name, so people know who this is from (optional):', '') || '').trim();
+  toast('Finding you…');
+  navigator.geolocation.getCurrentPosition(p => {
+    const lat = p.coords.latitude.toFixed(6), lon = p.coords.longitude.toFixed(6);
+    const link = `https://www.google.com/maps?q=${lat},${lon}`;
+    const text = `${name ? name + ' is' : 'I am'} here: ${link}`;
+    if (navigator.share) {
+      navigator.share({ title: 'My location', text, url: link }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => toast('Location link copied')).catch(() => toast(link));
+    } else {
+      toast(link);
+    }
+  }, () => toast('Could not get your location'), { enableHighAccuracy: true, timeout: 15000 });
 }
 let meMarker;
 function renderMarkers() {
