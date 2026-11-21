@@ -130,14 +130,14 @@ nav.tabs button.on{color:var(--red)}
  <section class="view" id="v-explore">
   <div class="chips" id="chips-see"></div>
   <div class="basebar"></div>
-  <div class="sortbar"><span id="count-see"></span><select id="sort-see"><option value="walk">Closest to hotel</option><option value="name">A–Z</option><option value="me">Closest to me</option></select></div>
+  <div class="sortbar"><span id="count-see"></span><select id="sort-see"><option value="walk">Closest to the Plaza</option><option value="name">A–Z</option><option value="me">Closest to me</option></select></div>
   <div class="grid" id="list-see"></div>
  </section>
  <section class="view" id="v-eat">
   <div class="chips" id="chips-eat"></div>
   <div class="price-row" id="prices"></div>
   <div class="basebar"></div>
-  <div class="sortbar"><span id="count-eat"></span><select id="sort-eat"><option value="walk">Closest to hotel</option><option value="price">Cheapest first</option><option value="name">A–Z</option><option value="me">Closest to me</option></select></div>
+  <div class="sortbar"><span id="count-eat"></span><select id="sort-eat"><option value="walk">Closest to the Plaza</option><option value="price">Cheapest first</option><option value="name">A–Z</option><option value="me">Closest to me</option></select></div>
   <div class="grid" id="list-eat"></div>
  </section>
  <section class="view" id="v-map">
@@ -194,7 +194,7 @@ nav.tabs button.on{color:var(--red)}
  <div id="baseRes"></div>
  <button class="opt2" id="baseHere">📍 Use where I am now</button>
  <button class="opt2" id="basePick">🗺️ Tap a spot on the map</button>
- <button class="opt2" id="baseReset">↺ Go back to the hotel</button>
+ <button class="opt2" id="baseReset">↺ Go back to Plaza de la Constitución</button>
  <button class="btn b-map" style="width:100%;margin-top:8px" id="baseClose">Close</button></div></div>
 <div id="toast"></div>
 
@@ -202,7 +202,7 @@ nav.tabs button.on{color:var(--red)}
 <script src="vendor/leaflet.js"></script>
 <script>
 (() => {
-window.GUIDE.base = window.GUIDE.hotel;
+window.GUIDE.base = Object.assign({ q: 'Plaza de la Constitución, Málaga' }, window.GUIDE.hotel);
 const G = window.GUIDE, CATS = G.cats, ITEMS = G.items, HOTEL0 = G.base;
 let HOTEL = HOTEL0;
 const SK = k => 'malaga:' + k;
@@ -311,7 +311,7 @@ function initMap() {
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
-  const hi = L.divIcon({ className: '', html: '<div class="pin hotel">H</div>', iconSize: [34, 34], iconAnchor: [17, 17] });
+  const hi = L.divIcon({ className: '', html: '<div class="pin hotel">★</div>', iconSize: [34, 34], iconAnchor: [17, 17] });
   hotelMarker = L.marker([HOTEL.lat, HOTEL.lon], { icon: hi, zIndexOffset: 1000 }).addTo(map).bindPopup(hotelPopup);
   layer = L.layerGroup().addTo(map);
   mapReady = true; renderMarkers();
@@ -383,14 +383,14 @@ function locate(pan) {
 
 // ---------- your base ----------
 let hotelMarker, pickMode = false, baseCustom = null;
-const DEF_THE = 'the hotel', DEF_SHORT = 'the Sallés hotel';
+const DEF_THE = 'the Plaza', DEF_SHORT = 'Plaza de la Constitución';
 function baseThe() { return baseCustom ? baseCustom.name : DEF_THE; }
 function walkTxt(it) {
   if (baseCustom && it.walk > 60) { const km = dist(HOTEL, it) / 1000; return `📏 ${km < 10 ? km.toFixed(1) : Math.round(km)} km from ${esc(baseThe())}`; }
   return `🚶 ${it.walk} min from ${esc(baseThe())}`;
 }
 function hotelPopup() {
-  if (!baseCustom) return `<div class="pop"><h4>🏨 ${esc(HOTEL.name)}</h4><div class="addr">${esc(HOTEL.addr)}<br>Distances in the guide are walking minutes from here.</div><button class="linkchip" data-base>⭐ Set my own base</button>${actions({q: HOTEL.name + ', Calle Mármoles 6, Málaga', name: HOTEL.name, ta: true}, true)}</div>`;
+  if (!baseCustom) return `<div class="pop"><h4>📍 ${esc(HOTEL.name)}</h4><div class="addr">${esc(HOTEL.addr)}<br>Distances in the guide are walking minutes from here.</div><button class="linkchip" data-base>⭐ Set my own base</button>${actions({q: HOTEL0.q, name: HOTEL.name, ta: false}, true)}</div>`;
   const q = { q: `${HOTEL.lat.toFixed(6)},${HOTEL.lon.toFixed(6)}`, name: HOTEL.name, ta: false };
   return `<div class="pop"><h4>⭐ ${esc(HOTEL.name)}</h4><div class="addr">${esc(HOTEL.addr)}<br>Your base: walking times in the guide are from here.</div><button class="linkchip" data-base>✎ Change base</button>${navButtons(q)}</div>`;
 }
@@ -453,32 +453,21 @@ function coffee() {
 function iref(id, label) { const it = ITEMS.find(x => x.id === id); return `<button class="linkchip" data-goto="${id}" style="color:${CATS[it.cat].color}">${CATS[it.cat].emoji} ${esc(label || it.name)}</button>`; }
 function byName(n) { return ITEMS.find(x => x.name === n).id; }
 function renderInfo() {
-  const H = HOTEL0, hq = { q: H.name + ', Calle Mármoles 6, Málaga', name: H.name, ta: true };
+  const H = HOTEL0;
   $('#v-info').innerHTML = `
-  <div class="hero"><img src="img/hotel.svg" alt=""><div class="cap"><span style="color:var(--yellow);font-size:11px;font-weight:800;letter-spacing:2px">YOUR BASE</span><br><b>${esc(H.name)}</b><br><span style="font-size:13px">${esc(H.addr)}</span></div></div>
-  <div class="sec"><h2>🏨 The hotel</h2>
-   <p>A 4-star hotel in the Trinidad quarter on the west bank of the Guadalmedina, a couple of minutes from the Santo Domingo bridge into the old town.</p>
-   <div class="facts">
-    <div class="fact"><b>☀ Rooftop</b><br>Pool, terrace bar (Áurea) and views. The pool and bar are seasonal, so ask at reception.</div>
-    <div class="fact"><b>🏋 Gym</b><br>A small rooftop fitness room</div>
-    <div class="fact"><b>🍽 Restaurant</b><br>Mediterranean and Andalusian food, plus a café-bar and buffet breakfast</div>
-    <div class="fact"><b>🕑 Times</b><br>Check-in from 14:00, check-out by 12:00. Luggage storage available.</div>
-   </div>
-   <p style="margin-top:10px">☎ <a href="tel:+34952070216">+34 952 07 02 16</a> · <a href="https://${H.web}" target="_blank" rel="noopener">${H.web}</a></p>
-   ${actions(hq, true)}
-  </div>
-  <div class="sec"><h2>✈️ Airport → hotel</h2>
+  <div class="hero"><img src="img/cover.svg" alt=""><div class="cap"><span style="color:var(--yellow);font-size:11px;font-weight:800;letter-spacing:2px">STARTING POINT</span><br><b>${esc(H.name)}</b><br><span style="font-size:13px">The square at the top of Calle Larios. Walking times are from here until you <button class="linkchip" data-base style="display:inline;padding:2px 8px">⭐ set your own base</button>.</span></div></div>
+  <div class="sec"><h2>✈️ Airport → centre</h2>
    <img src="img/transit.svg" alt="" style="width:100%;border-radius:12px;aspect-ratio:16/7;object-fit:cover">
    <div class="opt" style="border-color:#E8483B"><h4 style="background:#E8483B"><span>🚆 Train C1</span><span>€1.80 · 12 min</span></h4><ol>
     <li>Follow the signs from arrivals to <b>Tren / Cercanías</b>, next to Terminal 3.</li>
     <li>Take the C1 heading for <b>Málaga Centro-Alameda</b>, <u>not</u> Fuengirola. Trains run about every 20 minutes.</li>
     <li>Get off at the last stop, <b>Málaga Centro-Alameda</b>. Works on the river may close the riverside path, so check walking directions in Apple Maps or Google Maps before you set off, and choose the route that avoids the works.</li>
-    <li>From the station, the hotel is about 500 m away, on <b>Calle Mármoles</b>. If the route is unclear or you have luggage, a taxi is the easiest option.</li></ol></div>
+    <li>From the station it's about 15 minutes' walk across the river to Calle Larios and the old town. If you have luggage, a taxi from the rank outside is the easiest option.</li></ol></div>
    <div class="opt" style="border-color:#2EC4B6"><h4 style="background:#2EC4B6"><span>🚌 Bus A Express</span><span>≈ €4 · 15–25 min</span></h4><ol>
     <li>The stop is outside Arrivals on Floor 0 of Terminal 3. Buses run about every 20–30 minutes, from about 07:00 until midnight.</li>
-    <li>Get off at <b>Avenida de Andalucía</b> (by El Corte Inglés), about 12 minutes' walk from the hotel.</li></ol></div>
+    <li>Get off at <b>Avenida de Andalucía</b> (by El Corte Inglés), about 15 minutes' walk from the old town.</li></ol></div>
    <div class="opt" style="border-color:#E8930C"><h4 style="background:#E8930C"><span>🚕 Taxi</span><span>≈ €20–30 · 15–20 min</span></h4><ol>
-    <li>The official rank is outside Arrivals. Show the driver: <b>Hotel Sallés Málaga Centro, Calle Mármoles 6</b>.</li>
+    <li>The official rank is outside Arrivals. Have your accommodation's full address ready to show the driver.</li>
     <li>There are supplements at night, at weekends and on public holidays. Uber and Cabify also operate.</li></ol></div>
    <p><b>Going home:</b> take the C1 from Centro-Alameda towards <b>Fuengirola</b> and get off at <b>Aeropuerto</b>. Aim to arrive about 2 hours before your flight.</p>
   </div>
@@ -537,8 +526,8 @@ function renderInfo() {
   <button class="iconbtn" id="refreshBtn" style="padding:10px 14px;box-shadow:0 1px 5px rgba(0,0,0,.2)">Refresh guide</button></div>
   <div class="sec"><h2>🏘️ Neighbourhoods</h2>
   <ul>
-  <li><b>Centro (old town):</b> the Cathedral, Calle Larios and the lanes around Plaza de la Merced. Most of the bars and museums are here, and your hotel is in this area.</li>
-  <li><b>Soho:</b> the arts district east of Calle Larios, with murals, galleries and the craft breweries. It's more industrial and laid-back than the old town, and it's a short walk from the hotel.</li>
+  <li><b>Centro (old town):</b> the Cathedral, Calle Larios and the lanes around Plaza de la Merced. Most of the bars and museums are here.</li>
+  <li><b>Soho:</b> the arts district east of Calle Larios, with murals, galleries and the craft breweries. It's more industrial and laid-back than the old town, and a short walk from Calle Larios.</li>
   <li><b>La Malagueta:</b> the beach promenade and the seafront restaurants, reached by walking east along the port. It's busiest in the evening.</li>
   <li><b>Pedregalejo:</b> the old fishing district further east, with espetos grilled by the sea and a more local feel. It's a longer walk or a short taxi or bus ride.</li>
   <li><b>Lagunillas:</b> a street of murals and small alternative bars, best explored slowly on foot.</li>
